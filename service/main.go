@@ -1,19 +1,25 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
+
+	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/core"
 )
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hello, World!")
+	app := pocketbase.New()
+
+	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
+		se.Router.GET("/hello", func(re *core.RequestEvent) error {
+			return re.String(200, "Hello, World!")
+		})
+
+		return se.Next()
 	})
 
 	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := app.Start(); err != nil {
 		log.Fatalf("could not start server: %v", err)
 	}
 }
